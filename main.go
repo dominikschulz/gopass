@@ -120,7 +120,7 @@ func getVersion() semver.Version {
 		Minor: 7,
 		Patch: 0,
 		Pre: []semver.PRVersion{
-			{VersionStr: "alpha.0"},
+			{VersionStr: "alpha.1"},
 		},
 		Build: []string{"HEAD"},
 	}
