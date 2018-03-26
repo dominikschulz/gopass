@@ -1,4 +1,4 @@
-## Next Release
+## 1.7.0-alpha.0 / 2018-03-26
 
 * [FEATURE] Pluggable crypto, storage and RCS backends. Including a pure-Go NaCl based crypto backend [#645] [#680]
 * [FEATURE] Password history [#660]
