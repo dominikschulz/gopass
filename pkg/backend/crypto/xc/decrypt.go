@@ -41,7 +41,11 @@ func (x *XC) Decrypt(ctx context.Context, buf []byte) ([]byte, error) {
 
 	plainBuf := &bytes.Buffer{}
 
+	var lastSeen bool
 	for i, chunk := range msg.Chunks {
+		if lastSeen {
+			return nil, fmt.Errorf("data after final chunk marker! this should never happen")
+		}
 		// reconstruct nonce from chunk number
 		// in case chunks have been reordered by some adversary
 		// decryption will fail
@@ -56,6 +60,12 @@ func (x *XC) Decrypt(ctx context.Context, buf []byte) ([]byte, error) {
 		}
 
 		plainBuf.Write(plaintext)
+		if chunk.Last {
+			lastSeen = true
+		}
+	}
+	if !lastSeen {
+		return nil, fmt.Errorf("final chunk marker not seen! this should never happen")
 	}
 
 	if !msg.Compressed {

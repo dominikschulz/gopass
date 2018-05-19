@@ -142,6 +142,9 @@ func encryptBody(plaintext []byte) ([]byte, []*xcpb.Chunk, error) {
 		})
 		offset += chunkSizeMax
 	}
+	if len(chunks) > 0 {
+		chunks[len(chunks)-1].Last = true
+	}
 
 	return sessionKey[:], chunks, nil
 }

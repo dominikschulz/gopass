@@ -19,6 +19,7 @@ import (
 	"github.com/justwatchcom/gopass/pkg/backend/crypto/xc/keyring"
 	"github.com/justwatchcom/gopass/pkg/backend/crypto/xc/xcpb"
 	"github.com/stretchr/testify/assert"
+	"github.com/vmihailenco/msgpack"
 )
 
 func TestStream(t *testing.T) {
@@ -352,6 +353,27 @@ func BenchmarkCustomDecoder(b *testing.B) {
 			}
 			if string(data) != string(encbuf) {
 				b.Logf("invalid data: '%s' vs. '%s'", data, encbuf)
+			}
+		}
+	}
+}
+
+func BenchmarkMessagePack(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		buf := &bytes.Buffer{}
+		data := []byte("foobar")
+
+		for j := 0; j < benchInner; j++ {
+			enc := msgpack.NewEncoder(buf)
+			_ = enc.Encode(data)
+		}
+		dec := msgpack.NewDecoder(bytes.NewReader(buf.Bytes()))
+		for {
+			if err := dec.Decode(&data); err != nil {
+				if err == io.EOF {
+					break
+				}
+				b.Fatalf("read error: %s", err)
 			}
 		}
 	}

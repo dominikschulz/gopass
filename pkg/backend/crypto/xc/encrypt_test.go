@@ -176,11 +176,39 @@ func TestEncryptChunks(t *testing.T) {
 
 	msg.Chunks[0], msg.Chunks[1] = msg.Chunks[1], msg.Chunks[0]
 
-	ciphertext, err = proto.Marshal(msg)
+	ciphertextCopy, err := proto.Marshal(msg)
 	assert.NoError(t, err)
 
 	// check decryption fails
-	_, err = xc.Decrypt(ctx, ciphertext)
+	_, err = xc.Decrypt(ctx, ciphertextCopy)
+	assert.Error(t, err)
+
+	// remove final marker
+	msg = &xcpb.Message{}
+	assert.NoError(t, proto.Unmarshal(ciphertext, msg))
+	assert.Equal(t, 10, len(msg.Chunks))
+
+	msg.Chunks[len(msg.Chunks)-1].Last = false
+
+	ciphertextCopy, err = proto.Marshal(msg)
+	assert.NoError(t, err)
+
+	// check decryption fails
+	_, err = xc.Decrypt(ctx, ciphertextCopy)
+	assert.Error(t, err)
+
+	// add chunk after final marker
+	msg = &xcpb.Message{}
+	assert.NoError(t, proto.Unmarshal(ciphertext, msg))
+	assert.Equal(t, 10, len(msg.Chunks))
+
+	msg.Chunks = append(msg.Chunks, msg.Chunks[len(msg.Chunks)-1])
+
+	ciphertextCopy, err = proto.Marshal(msg)
+	assert.NoError(t, err)
+
+	// check decryption fails
+	_, err = xc.Decrypt(ctx, ciphertextCopy)
 	assert.Error(t, err)
 }
 
