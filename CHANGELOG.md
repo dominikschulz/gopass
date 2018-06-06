@@ -18,12 +18,18 @@ the runtime behaviour, but we could not test this on all platforms, yet.
 * [ENHANCEMENT] Remove -static build flag, enable CGO and -buildmode=PIE [#823]
 * [ENHANCEMENT] Warn if RCS backend is noop during gopass sync [#825]
 * [ENHANCEMENT] Support for special password rules on generate [#832]
+* [ENHANCEMENT] Improve create wizard [#842]
+* [ENHANCEMENT] Honor templates on generate [#847]
+* [ENHANCEMENT] Support NO_COLOR [#851]
 * [BUGFIX] Reset clipboard timer on repeated copy [#813]
 * [BUGFIX] Add --force to git add invocation [#839]
 * [BUGFIX] Rename updater GitHub Organisation [#818]
 * [BUGFIX] Default to origin master for git pull [#819]
 * [BUGFIX] Properly propagate RCS backend on gopass clone [#820]
 * [BUGFIX] Fix sub store config propagation [#837 #841]
+* [BUGFIX] Use default for password store dir [#846]
+* [BUGFIX] Properly handle autosync on recipients save [#848]
+* [BUGFIX] Resolve key IDs to fingerprints before adding or removing [#850]
 
 ## 1.7.2 / 2018-05-28
 
