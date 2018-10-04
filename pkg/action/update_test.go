@@ -72,6 +72,7 @@ func TestUpdate(t *testing.T) {
 			Name: "gopass",
 			Mode: 0600,
 			Size: int64(len(body)),
+			Typeflag: tar.TypeReg,
 		}
 		if err := tw.WriteHeader(hdr); err != nil {
 			http.Error(w, "Internal Server Error", http.StatusInternalServerError)
@@ -100,6 +101,6 @@ func TestUpdate(t *testing.T) {
 		stdout = os.Stdout
 	}()
 
-	assert.NoError(t, act.Update(ctx, c))
+	assert.NoError(t, act.Update(ctx, c), buf.String())
 	buf.Reset()
 }

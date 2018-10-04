@@ -157,7 +157,8 @@ func extract(ctx context.Context, archive, dest string) error {
 			return err
 		}
 		name := filepath.Base(header.Name)
-		if header.Typeflag == 0 && name == "gopass" {
+		out.Debug(ctx, "tar - checking %s - %s - %d", header.Name, name, header.Typeflag)
+		if header.Typeflag == tar.TypeReg && name == "gopass" {
 			_, err := io.Copy(dfh, tarReader)
 			return err
 		}
