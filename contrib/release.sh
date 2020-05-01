@@ -22,8 +22,21 @@ if [[ $VERSION == '' ]]; then
     NEXT=$((PATCH+1))
     VERSION="$MAJMIN.$NEXT"
 fi
-# TODO: ask to proceeed
-echo $VERSION
-git log "v${LAST_VERSION}..HEAD" --pretty=full --grep=RELEASE_NOTES
+
+echo "Releasing ${VERSION}"
+read -n 1 -p "Do you want to proceed?"
+
+CHANGES=$(git log "v1.8.6..HEAD" --pretty=full --grep=RELEASE_NOTES | grep RELEASE_NOTES | cut -d'=' -f2 | grep -v n/a | sort)
+echo $CHANGES
+# TODO prepend CHANGES to CHANGELOG.md
 CHANGELOG=$(sed -n "/## ${VERSION}/,/##/{p}" CHANGELOG.md | head --lines=-1)
 echo $CHANGELOG
+
+echo "${VERSION}" > VERSION
+
+# TODO git commit -am"Tag v${VERSION}"
+# TODO git tag -s v${VERSION}
+# TODO make completion
+# TODO goreleaser --skip-publish
+# TODO git push origin v${VERSION}
+# TODO goreleaser --release-notes <(contrib/relnotes.sh)
