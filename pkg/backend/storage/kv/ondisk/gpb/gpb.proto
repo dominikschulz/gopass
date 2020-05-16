@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = ".;gpb";
+
+package gpb;
+
+message Revision {
+    google.protobuf.Timestamp Created = 1;
+    string Message = 2;
+    string Filename = 3;
+}
+
+message Entry {
+    string Name = 1;
+    repeated Revision Revisions = 2;
+}
+
+message Store {
+    string Name = 1;
+    map<string, Entry> Entries = 2;
+}

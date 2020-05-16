@@ -14,6 +14,7 @@ require (
 	github.com/fatih/color v1.9.0
 	github.com/gdamore/tcell v1.3.0
 	github.com/godbus/dbus v0.0.0-20190623212516-8a1682060722
+	github.com/gogo/protobuf v1.3.1
 	github.com/gokyle/twofactor v1.0.1
 	github.com/golang/protobuf v1.4.0
 	github.com/google/go-github v17.0.0+incompatible
