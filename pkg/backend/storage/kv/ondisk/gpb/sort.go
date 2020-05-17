@@ -1,7 +1,10 @@
 package gpb
 
-import "sort"
+import (
+	"sort"
+)
 
+// ByRevision sorts to latest revision to the top, i.e. [0]
 type ByRevision []*Revision
 
 func (r ByRevision) Len() int           { return len(r) }
@@ -10,5 +13,20 @@ func (r ByRevision) Less(i, j int) bool { return r[i].Created.Seconds > r[j].Cre
 
 func (e *Entry) Latest() *Revision {
 	sort.Sort(ByRevision(e.Revisions))
-	return e.Revisions[len(e.Revisions)-1]
+	return e.Revisions[0]
+}
+
+func (e *Entry) IsDeleted() bool {
+	return e.Latest().GetTombstone()
+}
+
+func (e *Entry) Delete(msg string) bool {
+	if e.IsDeleted() {
+		return false
+	}
+	e.Revisions = append(e.Revisions, &Revision{
+		Message:   msg,
+		Tombstone: true,
+	})
+	return true
 }

@@ -10,6 +10,7 @@ message Revision {
     google.protobuf.Timestamp Created = 1;
     string Message = 2;
     string Filename = 3;
+    bool Tombstone = 4;
 }
 
 message Entry {

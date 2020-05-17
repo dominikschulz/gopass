@@ -13,6 +13,8 @@ import (
 	"github.com/blang/semver"
 	proto "github.com/golang/protobuf/proto"
 	"github.com/gopasspw/gopass/pkg/backend/storage/kv/ondisk/gpb"
+	"github.com/gopasspw/gopass/pkg/ctxutil"
+	"github.com/gopasspw/gopass/pkg/out"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
@@ -71,7 +73,9 @@ func (o *OnDisk) Get(ctx context.Context, name string) ([]byte, error) {
 	if r == nil {
 		return nil, fmt.Errorf("not found")
 	}
-	return ioutil.ReadFile(filepath.Join(o.dir, r.GetFilename()))
+	path := filepath.Join(o.dir, r.GetFilename())
+	out.Debug(ctx, "Get(%s) - Reading from %s", name, path)
+	return ioutil.ReadFile(path)
 }
 
 func filename(buf []byte) string {
@@ -88,37 +92,61 @@ func (o *OnDisk) Set(ctx context.Context, name string, value []byte) error {
 	if err := ioutil.WriteFile(fp, value, 0600); err != nil {
 		return err
 	}
-	e, found := o.idx.Entries[name]
-	if !found || e == nil {
-		e = &gpb.Entry{
-			Name:      name,
-			Revisions: make([]*gpb.Revision, 0, 1),
-		}
+	out.Debug(ctx, "Set(%s) - Wrote to %s", name, fp)
+	e := o.getEntry(ctx, name)
+	msg := "Updated " + fn
+	if cm := ctxutil.GetCommitMessage(ctx); cm != "" {
+		msg = cm
 	}
 	e.Revisions = append(e.Revisions, &gpb.Revision{
 		Created: &timestamppb.Timestamp{
 			Seconds: time.Now().Unix(),
 		},
-		Message:  "Updated " + fn, // TODO from context
+		Message:  msg,
 		Filename: fn,
 	})
+	out.Debug(ctx, "Set(%s) - Added Revision", name)
 	o.idx.Entries[name] = e
 	return o.saveIndex()
 }
 
+func (o *OnDisk) getEntry(ctx context.Context, name string) *gpb.Entry {
+	if e, found := o.idx.Entries[name]; found && e != nil {
+		return e
+	}
+	out.Debug(ctx, "getEntry(%s) - Created new Entry", name)
+	return &gpb.Entry{
+		Name:      name,
+		Revisions: make([]*gpb.Revision, 0, 1),
+	}
+}
+
 func (o *OnDisk) Delete(ctx context.Context, name string) error {
-	delete(o.idx.Entries, name)
+	if !o.Exists(ctx, name) {
+		out.Debug(ctx, "Delete(%s) - Not adding tombstone for non-existing entry", name)
+		return nil
+	}
+	// add tombstone
+	e := o.getEntry(ctx, name)
+	e.Delete(ctxutil.GetCommitMessage(ctx))
+	o.idx.Entries[name] = e
+
+	out.Debug(ctx, "Delete(%s) - Added tombstone")
 	return o.saveIndex()
 }
 
 func (o *OnDisk) Exists(ctx context.Context, name string) bool {
 	_, found := o.idx.Entries[name]
+	out.Debug(ctx, "Exists(%s): %t", name, found)
 	return found
 }
 
 func (o *OnDisk) List(ctx context.Context, prefix string) ([]string, error) {
 	res := make([]string, 0, len(o.idx.Entries))
-	for k := range o.idx.Entries {
+	for k, v := range o.idx.Entries {
+		if v.IsDeleted() {
+			continue
+		}
 		if strings.HasPrefix(k, prefix) {
 			res = append(res, k)
 		}
@@ -127,8 +155,7 @@ func (o *OnDisk) List(ctx context.Context, prefix string) ([]string, error) {
 }
 
 func (o *OnDisk) IsDir(ctx context.Context, name string) bool {
-	l, _ := o.List(ctx, name)
-	return len(l) > 0 && !o.Exists(ctx, name)
+	return false
 }
 
 func (o *OnDisk) Prune(ctx context.Context, prefix string) error {
@@ -155,4 +182,19 @@ func (o *OnDisk) String() string {
 
 func (o *OnDisk) Available(ctx context.Context) error {
 	return nil
+}
+
+// Compact will prune all deleted entries and truncate every other entry
+// to the last 10 revisions.
+func (o *OnDisk) Compact(ctx context.Context) error {
+	for k, v := range o.idx.Entries {
+		if v.IsDeleted() {
+			delete(o.idx.Entries, k)
+			continue
+		}
+		if len(o.idx.Entries[k].Revisions) > 10 {
+			o.idx.Entries[k].Revisions = o.idx.Entries[k].Revisions[0:10]
+		}
+	}
+	return o.saveIndex()
 }
