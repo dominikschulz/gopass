@@ -33,7 +33,7 @@ func main() {
 		}
 	}()
 
-	gp, err := gopass.New(ctx)
+	gp, err := api.New(ctx)
 	if err != nil {
 		panic(err)
 	}

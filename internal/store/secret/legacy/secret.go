@@ -1,13 +1,15 @@
-package secret
+package legacy
 
 import (
 	"bytes"
 	"os"
 	"reflect"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/gopasspw/gopass/internal/store"
+	"github.com/gopasspw/gopass/pkg/gopass"
 )
 
 var debug bool
@@ -107,6 +109,31 @@ func (s *Secret) Data() map[string]interface{} {
 	defer s.Unlock()
 
 	return s.data
+}
+
+func (s *Secret) Header() gopass.Header {
+	return s
+}
+
+func (s *Secret) Get(key string) string {
+	sv, err := s.Value(key)
+	if err != nil {
+		sv = ""
+	}
+	return sv
+}
+
+func (s *Secret) Set(key, value string) {
+	s.SetValue(key, value)
+}
+
+func (s *Secret) Keys() []string {
+	keys := make([]string, 0, len(s.data))
+	for k := range s.data {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+	return keys
 }
 
 // SetBody sets a new body possibly erasing an decoded YAML map

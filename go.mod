@@ -4,11 +4,13 @@ go 1.12
 
 require (
 	github.com/alecthomas/binary v0.0.0-20190922233330-fb1b1d9c299c
+	github.com/alexflint/go-arg v1.3.0 // indirect
 	github.com/atotto/clipboard v0.1.2
 	github.com/blang/semver v0.0.0-20190414182527-1a9109f8c4a1
 	github.com/cenkalti/backoff v2.2.1+incompatible
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/dominikschulz/gg v0.0.0-20200522140302-74866f79716f // indirect
 	github.com/dominikschulz/github-releases v0.0.3
 	github.com/fatih/color v1.9.0
 	github.com/godbus/dbus v0.0.0-20190623212516-8a1682060722
@@ -33,9 +35,9 @@ require (
 	github.com/skip2/go-qrcode v0.0.0-20191027152451-9434209cb086
 	github.com/stretchr/testify v1.5.1
 	github.com/urfave/cli/v2 v2.2.0
-	golang.org/x/crypto v0.0.0-20200423211502-4bdfaf469ed5
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/net v0.0.0-20200421231249-e086a090c8fd
-	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
+	golang.org/x/sys v0.0.0-20200523222454-059865788121
 	google.golang.org/protobuf v1.21.0
 	gopkg.in/check.v1 v1.0.0-20200227125254-8fa46927fb4f // indirect
 	gopkg.in/yaml.v2 v2.2.8
