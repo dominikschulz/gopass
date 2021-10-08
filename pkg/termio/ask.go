@@ -10,6 +10,7 @@ import (
 
 	"github.com/gopasspw/gopass/internal/out"
 	"github.com/gopasspw/gopass/pkg/ctxutil"
+	"gopkg.in/AlecAivazis/survey.v1"
 )
 
 var (
@@ -39,16 +40,25 @@ func AskForString(ctx context.Context, text, def string) (string, error) {
 	default:
 	}
 
-	fmt.Fprintf(Stdout, "%s [%s]: ", text, def)
-	input, err := NewReader(ctx, Stdin).ReadLine()
-	if err != nil {
-		return "", fmt.Errorf("failed to read user input: %w", err)
-	}
-	input = strings.TrimSpace(input)
-	if input == "" {
-		input = def
+	input := ""
+	if err := survey.AskOne(&survey.Input{
+		Message: text,
+		Default: def,
+	}, &input, nil); err != nil {
+		return "", err
 	}
 	return input, nil
+
+	// fmt.Fprintf(Stdout, "%s [%s]: ", text, def)
+	// input, err := NewReader(ctx, Stdin).ReadLine()
+	// if err != nil {
+	// 	return "", fmt.Errorf("failed to read user input: %w", err)
+	// }
+	// input = strings.TrimSpace(input)
+	// if input == "" {
+	// 	input = def
+	// }
+	// return input, nil
 }
 
 // AskForBool ask for a bool (yes or no) exactly once.
