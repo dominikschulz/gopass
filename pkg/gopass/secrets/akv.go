@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gopasspw/gopass/internal/set"
+	"github.com/gopasspw/gopass/pkg/debug"
 	"golang.org/x/exp/maps"
 )
 
@@ -281,8 +282,14 @@ func ParseAKV(in []byte) *AKV {
 func (a *AKV) Body() string {
 	out := strings.Builder{}
 
+	debug.Log("Building body from %d chars", a.raw.Len())
 	s := bufio.NewScanner(strings.NewReader(a.raw.String()))
+	scanBuf := make([]byte, 0, a.raw.Len())
+	// bufio.Scanner uses bufio.MaxScanTokenSize by default. That is only 64k, too little
+	// for larger binary secrets.
+	s.Buffer(scanBuf, a.raw.Len())
 	first := true
+	// TODO: How does it handle input when the terminating newline is missing?
 	for s.Scan() {
 		// skip over the password
 		if first {
@@ -294,11 +301,16 @@ func (a *AKV) Body() string {
 		line := s.Text()
 		// ignore KV pairs
 		if strings.Contains(line, kvSep) {
+			debug.Log("ignoring line: %q", line)
+
 			continue
 		}
+		debug.Log("adding line of %d chars", len(line))
 		out.WriteString(line)
 		out.WriteString("\n")
 	}
+
+	debug.Log("built %d chars body", out.Len())
 
 	return out.String()
 }
