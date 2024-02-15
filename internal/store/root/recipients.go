@@ -95,16 +95,18 @@ func (r *Store) SaveRecipients(ctx context.Context, ack bool) error {
 func (r *Store) RecipientsTree(ctx context.Context, pretty bool) (*tree.Root, error) {
 	root := tree.New("gopass")
 
-	for name, recps := range r.store.RecipientsTree(ctx) {
-		if name != "" {
-			name += "/"
-		}
+	if r.store != nil {
+		for name, recps := range r.store.RecipientsTree(ctx) {
+			if name != "" {
+				name += "/"
+			}
 
-		debug.Log("Store/Secret: %q -> Recipients: %v", name, recps)
+			debug.Log("Store/Secret: %q -> Recipients: %v", name, recps)
 
-		for _, recp := range recps {
-			if err := r.addRecipient(ctx, name, root, recp, pretty); err != nil {
-				color.Yellow("Failed to add recipient to tree %s: %s", recp, err)
+			for _, recp := range recps {
+				if err := r.addRecipient(ctx, name, root, recp, pretty); err != nil {
+					color.Yellow("Failed to add recipient to tree %s: %s", recp, err)
+				}
 			}
 		}
 	}
