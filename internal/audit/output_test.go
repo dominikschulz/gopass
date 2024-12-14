@@ -2,10 +2,12 @@ package audit
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"testing"
 	"time"
 
+	"github.com/gopasspw/gopass/internal/out"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -80,4 +82,58 @@ Audited 1 secrets in 0s on %s.<br />
 </body>
 </html>
 `, today, today), out.String())
+}
+
+func TestPrintResults(t *testing.T) {
+	r := newReport()
+
+	r.AddPassword("foo", "bar")
+	r.SetAge("foo", time.Hour)
+	r.AddFinding("foo", "duplicate", "found duplicates", "warning")
+
+	sr := r.Finalize()
+	ctx := context.Background()
+	buf := &bytes.Buffer{}
+	oldOut := out.Stdout
+	oldErr := out.Stderr
+	out.Stdout = buf
+	out.Stderr = buf
+	defer func() {
+		out.Stdout = oldOut
+		out.Stderr = oldErr
+	}()
+	require.Error(t, sr.PrintResults(ctx))
+	assert.Contains(t, buf.String(), "Potentially weak. duplicate: found duplicates.")
+}
+
+func TestPrintSummary(t *testing.T) {
+	r := newReport()
+
+	r.AddPassword("foo", "bar")
+	r.SetAge("foo", time.Hour)
+	r.AddFinding("foo", "duplicate", "found duplicates", "warning")
+
+	sr := r.Finalize()
+	ctx := context.Background()
+	buf := &bytes.Buffer{}
+	oldOut := out.Stdout
+	out.Stdout = buf
+	defer func() {
+		out.Stdout = oldOut
+	}()
+	require.Error(t, sr.PrintSummary(ctx))
+	assert.Contains(t, buf.String(), "Analyzer duplicate found issues:")
+}
+
+func TestRenderCSV(t *testing.T) {
+	r := newReport()
+
+	r.AddPassword("foo", "bar")
+	r.SetAge("foo", time.Hour)
+	r.AddFinding("foo", "duplicate", "found duplicates", "warning")
+
+	sr := r.Finalize()
+	out := &bytes.Buffer{}
+	require.NoError(t, sr.RenderCSV(out))
+	assert.Contains(t, out.String(), "foo,1h0m0s,found duplicates")
 }

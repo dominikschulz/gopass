@@ -9,10 +9,7 @@ import (
 
 // SortedKeys returns the sorted keys of the map.
 func SortedKeys[K constraints.Ordered, V any](m map[K]V) []K {
-	// sort
-	keys := maps.Keys(m)
-
-	return slices.Sorted(keys)
+	return slices.Sorted(maps.Keys(m))
 }
 
 // Sorted returns a sorted set of the input.

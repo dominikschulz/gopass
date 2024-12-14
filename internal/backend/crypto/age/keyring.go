@@ -22,6 +22,7 @@ var (
 	OldKeyring = filepath.Join(appdir.UserConfig(), "age-keyring.age")
 )
 
+// migrate will attempt to migrate the old age keyring to the new format.
 func migrate(ctx context.Context, s backend.Storage) error {
 	out.Noticef(ctx, "Attempting to migrate age backend. You will need to unlock your identities keyring.")
 
