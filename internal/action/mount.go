@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"path/filepath"
 	"sort"
 	"strings"
 
@@ -79,6 +80,15 @@ func (s *Action) MountAdd(c *cli.Context) error {
 	localPath := c.Args().Get(1)
 	if alias == "" {
 		return exit.Error(exit.Usage, nil, "usage: %s mounts add <alias> [local path]", s.Name)
+	}
+
+	if strings.Contains(alias, string(filepath.Separator)) {
+		// Only a path provided, but no mount name.
+		return fmt.Errorf(
+			"missing mount name. Usage: gopass mounts add <mount-name> <path>\n" +
+				"Example: gopass mounts add personal ~/.password-store-personal\n" +
+				"See https://www.gopass.pw/docs/features/mounts/ for more information.",
+		)
 	}
 
 	if localPath == "" {
